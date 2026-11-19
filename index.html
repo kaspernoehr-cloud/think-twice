@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b10">
+<title>THINK TWICE – Brain Challenge</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#0b0b10;--panel:#14141c;--panel2:#1b1b25;--line:#2a2a37;--fg:#ececf2;--mute:#8d8d9e;--dim:#4d4d5e;--acc:#a596ff;--acc-d:#7c6cf0;--ok:#5fd4a8;--bad:#ff7482}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+body{display:flex;justify-content:center;min-height:100vh}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:disabled{cursor:default}
+#app{width:100%;max-width:480px;min-height:100vh;padding:calc(14px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.mute{color:var(--mute)}.small{font-size:13px}.center{text-align:center}
+.warn{color:var(--bad);font-size:13px}
+.ic{flex:none;opacity:.85}
+.k{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;text-align:left;width:100%}
+.btn{display:flex;align-items:center;justify-content:center;gap:4px;height:52px;border-radius:15px;font-weight:600;font-size:16px;width:100%;transition:transform .1s,opacity .2s}
+.btn:active:not(:disabled){transform:scale(.98)}
+.btn:disabled{opacity:.35}
+.btn.primary{background:var(--acc);color:#0b0b10}
+.btn.ghost{border:1px solid var(--line);background:var(--panel)}
+.btn.danger{background:var(--bad);color:#0b0b10}
+.btn.big{height:76px;flex-direction:column;font-size:21px;letter-spacing:.02em}
+.btn.big span{font-size:13px;font-weight:500;opacity:.7;letter-spacing:0}
+.btn.sm{height:42px;font-size:14px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.arrow{color:var(--acc);font-size:20px}
+/* forside */
+.top{display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:6px}
+.logo{font-size:15px;letter-spacing:.42em;font-weight:300;padding-left:.42em}
+.logo b{font-weight:700;color:var(--acc)}
+.lvl{display:flex;align-items:center;gap:10px;font-size:12.5px;width:100%}
+.lvl .bar{flex:1;height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+.lvl .bar i{display:block;height:100%;background:var(--acc);border-radius:4px}
+.hexwrap{position:relative;margin:2px -10px}
+.hex{width:100%;display:block}
+.hexwrap.small{max-width:340px;margin:0 auto}
+.hexnote{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mute);font-size:13px;text-align:center;padding:0 30%}
+.hx-outer{fill:var(--panel);stroke:var(--line);stroke-width:1}
+.hx-ring{fill:none;stroke:var(--line);stroke-width:1;stroke-dasharray:2 4}
+.hx-axis{stroke:var(--line);stroke-width:1}.hx-axis.off{stroke-dasharray:2 4;opacity:.6}
+.hx-shape{fill:rgba(165,150,255,.2);stroke:var(--acc);stroke-width:2;stroke-linejoin:round;animation:grow .7s ease}
+@keyframes grow{from{opacity:0}to{opacity:1}}
+.hx-dot{fill:var(--acc);stroke:var(--bg);stroke-width:2}
+.hx-lab text{fill:var(--fg);font-size:12.5px;font-weight:600}
+.hx-lab text.sub{fill:var(--mute);font-weight:400;font-size:11px}
+.hx-lab.off text{fill:var(--dim)}
+.daily{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.daily .k{margin-bottom:3px}.daily .v{font-size:15px}
+.daily.done .v{color:var(--acc)}
+/* kategorier */
+.bar-h{display:flex;align-items:center;gap:8px}
+.bar-h h2{font-size:18px;font-weight:600}
+.icon-btn{width:40px;height:40px;border-radius:12px;font-size:22px;display:flex;align-items:center;justify-content:center;color:var(--mute)}
+.icon-btn:active{background:var(--panel)}
+.list{display:flex;flex-direction:column;gap:10px}
+.catrow{display:flex;align-items:center;gap:14px}
+.catrow>div{flex:1}.catrow .v{font-size:16px;font-weight:600;margin-bottom:2px}
+.catrow.off{opacity:.4}
+/* opgave */
+#app.play{gap:10px}
+.thead{display:flex;align-items:center;gap:10px}
+.segs{flex:1;display:flex;gap:4px}
+.segs i{flex:1;height:4px;border-radius:3px;background:var(--line)}
+.segs i.cur{background:var(--mute)}.segs i.ok{background:var(--acc)}.segs i.no{background:var(--dim)}
+.tcat{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--mute);white-space:nowrap}
+.tlab{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);text-align:center}
+.task{display:flex;flex-direction:column;gap:16px;padding-top:6px}
+.task.padded{padding-bottom:150px}
+.prompt{font-size:18px;font-weight:500;text-align:center;line-height:1.35;padding:0 8px}
+.art{width:100%;height:100%;display:block}
+.matrix{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:min(100%,270px);margin:0 auto}
+.mcell{aspect-ratio:1;background:var(--panel);border-radius:11px;border:1px solid var(--line)}
+.mcell.q{display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--acc);border:1.5px dashed var(--acc-d);background:transparent}
+.opts{display:grid;grid-template-columns:repeat(var(--cols),1fr);gap:9px}
+.opt{aspect-ratio:1;background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:4px;transition:transform .1s,opacity .25s,border-color .2s}
+.opt:active:not(:disabled){transform:scale(.96)}
+.opt.correct{border-color:var(--ok);box-shadow:0 0 0 2px rgba(95,212,168,.25)}
+.opt.wrong{border-color:var(--bad)}
+.opt.dim{opacity:.35}
+.art rect{fill:var(--fg)}
+.art.accent rect{fill:var(--acc)}
+.refwrap{display:flex;justify-content:center}
+.ref{position:relative;width:132px;height:132px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:8px}
+.mline{position:absolute;top:-10px;bottom:-10px;right:-22px;border-right:2px dashed var(--mute)}
+.seq{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:10px 0}
+.seq span{min-width:52px;height:52px;padding:0 10px;border-radius:13px;background:var(--panel);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.seq .q{border:1.5px dashed var(--acc-d);color:var(--acc);min-width:70px}
+.seq .q.okc{border:1.5px solid var(--ok);color:var(--ok)}
+.seq .q.noc{border:1.5px solid var(--bad);color:var(--bad);text-decoration:line-through}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.key{height:54px;border-radius:13px;background:var(--panel);border:1px solid var(--line);font-size:21px;font-weight:500}
+.key:active:not(:disabled){background:var(--panel2)}
+.key:disabled{opacity:.35}
+.mgrid{display:grid;gap:8px;width:min(100%,330px);margin:0 auto}
+.mgrid.g3{grid-template-columns:repeat(3,1fr)}.mgrid.g4{grid-template-columns:repeat(4,1fr)}
+.mc{aspect-ratio:1;border-radius:14px;background:var(--panel);border:1px solid var(--line);font-size:20px;font-weight:700;transition:background .15s,border-color .15s;color:var(--bg)}
+.mc.lit{background:var(--acc);border-color:var(--acc);box-shadow:0 0 24px rgba(165,150,255,.45)}
+.mc.hit{background:var(--acc-d);border-color:var(--acc-d);color:#fff}
+.mc.bad{background:var(--bad);border-color:var(--bad)}
+.mc.show{border:1.5px solid var(--ok);color:var(--ok)}
+/* feedback */
+.sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:480px;background:var(--panel2);border-top:1px solid var(--line);border-radius:22px 22px 0 0;padding:16px 18px calc(18px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;animation:up .25s ease;z-index:5;box-shadow:0 -20px 40px rgba(0,0,0,.4)}
+@keyframes up{from{transform:translate(-50%,30px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+.sh-top{display:flex;align-items:center;justify-content:space-between}
+.verdict{font-size:19px;font-weight:700}
+.sheet.ok .verdict{color:var(--ok)}.sheet.no .verdict{color:var(--bad)}
+.link{color:var(--acc);font-size:14px;padding:6px 0}
+.expl{display:none;font-size:15px;line-height:1.5;color:#cfcfdb;max-height:30vh;overflow:auto}
+.sheet.open .expl{display:block}
+/* opsummering */
+.sumhead{text-align:center;padding:18px 0 4px}
+.score{font-size:64px;font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums}
+.score span{font-size:28px;color:var(--mute);font-weight:500}
+.srow{display:grid;grid-template-columns:20px 1fr auto 56px;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:15px}
+.stats .srow{grid-template-columns:20px 1fr auto 52px 44px}
+.k+.srow{border-top:0}
+.srow b{text-align:right;font-variant-numeric:tabular-nums}
+.srow em{font-style:normal;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;color:var(--mute)}
+.up{color:var(--ok)!important}.down{color:var(--bad)!important}
+.news{display:flex;flex-direction:column;gap:6px;color:var(--acc);font-size:14.5px}
+.xprow{display:flex;justify-content:space-between;margin-bottom:10px;font-weight:600}
+.card p{line-height:1.45}
+.card p+p{margin-top:6px}
+/* statistik */
+.tabs,.chips{display:flex;gap:6px}
+.tabs button,.chips button{flex:1;height:36px;border-radius:10px;border:1px solid var(--line);font-size:13.5px;color:var(--mute)}
+.chips{margin-bottom:12px;flex-wrap:wrap}.chips button{flex:1 1 auto;height:32px;padding:0 10px;font-size:12.5px}
+.tabs button.on,.chips button.on{background:var(--panel2);color:var(--fg);border-color:var(--dim)}
+.chartwrap{position:relative}
+.chart{width:100%;display:block;overflow:visible}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .axl{fill:var(--mute);font-size:10.5px}
+.chart .ln{fill:none;stroke:var(--acc);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart .mk{fill:var(--acc);stroke:var(--panel);stroke-width:2}
+.chart .xh{stroke:var(--dim);stroke-width:1}
+.chart .bar{fill:var(--acc)}
+.chart .bar:hover{fill:var(--fg)}
+.tip{position:absolute;display:none;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12.5px;pointer-events:none;width:130px;line-height:1.35}
+.tip span{color:var(--mute)}
+.empty{color:var(--mute);font-size:13.5px;padding:18px 0;text-align:center}
+.brow{display:grid;grid-template-columns:70px 1fr 92px;align-items:center;gap:10px;font-size:13.5px;padding:5px 0}
+.brow .track{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.brow .track i{display:block;height:100%;background:var(--acc);border-radius:4px}
+.brow .num{text-align:right;color:var(--mute);font-variant-numeric:tabular-nums}
+.heat{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px}
+.heat b{font-size:10.5px;color:var(--mute);font-weight:400;text-align:center}
+.heat i{aspect-ratio:1;border-radius:4px;background:var(--line)}
+.heat i.pad{background:none}
+.heat .a1{background:rgba(165,150,255,.3)}.heat .a2{background:rgba(165,150,255,.55)}.heat .a3{background:rgba(165,150,255,.8)}.heat .a4{background:var(--acc)}
+.krow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.k+.krow{border-top:0}
+.krow b{font-variant-numeric:tabular-nums}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px;z-index:10;animation:fade .2s}
+.mbox{background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:20px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:12px}
+.mbox h3{font-size:18px}
+.mbox textarea{width:100%;height:140px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:10px;font:12px ui-monospace,Menlo,monospace;resize:none}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><pattern id="tt-stripe" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)"><rect width="2" height="5" fill="#ececf2"/></pattern></defs></svg>
+<div id="app"></div>
+<script>
+// ===== THINK TWICE – opgavegeneratorer =====
+const ri=(rng,a,b)=>a+Math.floor(rng()*(b-a+1));
+const pick=(rng,arr)=>arr[Math.floor(rng()*arr.length)];
+function shuffle(rng,a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const range=n=>Array.from({length:n},(_,i)=>i);
+const diffs=s=>s.slice(1).map((v,i)=>v-s[i]);
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function hashStr(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19}return h>>>0}
+const fmtN=n=>n<0?'−'+Math.abs(n):String(n);
+
+// ---------- Numerisk logik ----------
+function genNumeric(L,rng){
+  let seq,expl;
+  const V=[
+    [()=>{const a=ri(rng,1,20),d=ri(rng,2,9);seq=range(6).map(i=>a+i*d);expl=`Læg ${d} til hver gang.`},
+     ()=>{const a=ri(rng,40,80),d=ri(rng,2,6);seq=range(6).map(i=>a-i*d);expl=`Træk ${d} fra hver gang.`}],
+    [()=>{const a=ri(rng,1,5),q=ri(rng,2,3);seq=range(6).map(i=>a*q**i);expl=`Gang med ${q} hver gang.`},
+     ()=>{const a=ri(rng,1,15),x=ri(rng,2,7);let y=ri(rng,2,9);if(y===x)y++;seq=[a];for(let i=1;i<7;i++)seq.push(seq[i-1]+(i%2?x:y));expl=`Læg skiftevis ${x} og ${y} til.`},
+     ()=>{const a=ri(rng,60,120),d=ri(rng,7,15);seq=range(6).map(i=>a-i*d);expl=`Træk ${d} fra hver gang.`}],
+    [()=>{const a=ri(rng,1,10),d=ri(rng,1,5),e=ri(rng,1,4);seq=[a];let k=d;for(let i=1;i<6;i++){seq.push(seq[i-1]+k);k+=e}expl=`Forskellen mellem tallene vokser med ${e} hver gang: ${diffs(seq).join(', ')}.`},
+     ()=>{const a=ri(rng,1,9),b=ri(rng,25,45),x=ri(rng,2,5),y=ri(rng,2,5);seq=[];for(let i=0;i<7;i++)seq.push(i%2===0?a+(i/2)*x:b-((i-1)/2)*y);expl=`To rækker er flettet sammen. Hvert andet tal stiger med ${x}, de andre falder med ${y}.`},
+     ()=>{const a=ri(rng,1,5),k=ri(rng,1,4);seq=[a];for(let i=1;i<7;i++)seq.push(i%2?seq[i-1]*2:seq[i-1]+k);expl=`Skiftevis gang med 2 og læg ${k} til.`}],
+    [()=>{const a=ri(rng,1,5),b=ri(rng,2,7);seq=[a,b];for(let i=2;i<7;i++)seq.push(seq[i-1]+seq[i-2]);expl=`Hvert tal er summen af de to foregående.`},
+     ()=>{const s=ri(rng,1,4),c=ri(rng,-3,5);seq=range(6).map(i=>(s+i)**2+c);expl=c===0?`Tallene er kvadrattal: ${s}², ${s+1}², ${s+2}² …`:`Tallene er kvadrattal ${c>0?'plus':'minus'} ${Math.abs(c)}: ${s}² ${c>0?'+':'−'} ${Math.abs(c)}, ${s+1}² ${c>0?'+':'−'} ${Math.abs(c)} …`},
+     ()=>{const a=ri(rng,2,9),d=ri(rng,1,3);seq=[a];let k=d;for(let i=1;i<6;i++){seq.push(seq[i-1]+k);k*=2}expl=`Forskellen fordobles hver gang: ${diffs(seq).join(', ')}.`},
+     ()=>{const a=ri(rng,2,6),m=ri(rng,2,3),k=ri(rng,1,5);seq=[a];for(let i=1;i<7;i++)seq.push(i%2?seq[i-1]*m:seq[i-1]-k);expl=`Skiftevis gang med ${m} og træk ${k} fra.`}],
+    [()=>{const a=ri(rng,2,8),x=ri(rng,2,6),k=ri(rng,1,5);seq=[a];const ops=[v=>v+x,v=>v*2,v=>v-k];for(let i=1;i<8;i++)seq.push(ops[(i-1)%3](seq[i-1]));expl=`Tre trin gentages: læg ${x} til, gang med 2, træk ${k} fra.`},
+     ()=>{const a=ri(rng,1,3),b=ri(rng,1,4),c=ri(rng,2,5);seq=[a,b,c];for(let i=3;i<7;i++)seq.push(seq[i-1]+seq[i-2]+seq[i-3]);expl=`Hvert tal er summen af de tre foregående.`},
+     ()=>{const a=ri(rng,1,10);seq=[a];for(let i=1;i<6;i++)seq.push(seq[i-1]+i*i);expl=`Forskellene er kvadrattallene: 1, 4, 9, 16, 25.`},
+     ()=>{const a=ri(rng,1,3),b=ri(rng,3,9),d=ri(rng,2,5);seq=[];for(let i=0;i<9;i++)seq.push(i%2===0?a*2**(i/2):b+((i-1)/2)*d);expl=`To rækker er flettet sammen: hvert andet tal fordobles, de andre stiger med ${d}.`}]
+  ];
+  pick(rng,V[L])();
+  const answer=seq.pop();
+  return {cat:'numeric',kind:'input',prompt:'Hvilket tal kommer nu?',seq,answer,expl:expl+` Svaret er ${fmtN(answer)}.`};
+}
+
+// ---------- Mønstergenkendelse ----------
+const SHAPES=['circle','square','triangle','diamond'];
+const FILLS=['empty','striped','solid'];
+const SIZES=[0.55,0.78,1];
+const SH={circle:['cirkel','cirkler'],square:['firkant','firkanter'],triangle:['trekant','trekanter'],diamond:['rombe','romber']};
+const FI={empty:['tom','tomme'],striped:['stribet','stribede'],solid:['fyldt','fyldte']};
+const SZ=[['lille','små'],['mellemstor','mellemstore'],['stor','store']];
+function descCell(c,withSize){const p=c.count>1?1:0;return `${c.count===1?'én':c.count} ${withSize?SZ[c.size][p]+' ':''}${FI[c.fill][p]} ${SH[c.shape][p]}`}
+const cellKey=c=>`${c.shape}|${c.count}|${c.fill}|${c.size}`;
+
+function genPattern(L,rng){
+  const attrs=['shape','count','fill','size'];
+  const nVary=[1,2,2,3,4][L];
+  const vary=L===4?attrs.slice():shuffle(rng,['shape','count','fill']).slice(0,nVary);
+  const shapeSet=shuffle(rng,SHAPES).slice(0,3);
+  const dom={shape:shapeSet,count:[1,2,3],fill:FILLS,size:[0,1,2]};
+  const rules={};
+  for(const a of attrs){
+    if(!vary.includes(a)){rules[a]={t:'const',v:a==='shape'?shapeSet[0]:a==='count'?ri(rng,1,3):a==='fill'?pick(rng,FILLS):1};continue}
+    const progOk=a==='count'||a==='size';
+    let t;
+    if(L===0)t=progOk?'prog':'latinP';
+    else if(L===1)t=progOk&&rng()<0.6?'prog':'latinP';
+    else t=pick(rng,progOk?['prog','latinP','latinM']:['latinP','latinM']);
+    let vals=shuffle(rng,dom[a]);
+    if(t==='prog'){vals=dom[a].slice();if(L>=2&&rng()<0.4)vals.reverse()}
+    rules[a]={t,vals};
+  }
+  if(L===2&&!vary.some(a=>rules[a].t==='latinM')){const a=vary.find(a=>a!=='count')||vary[0];rules[a]={t:'latinM',vals:shuffle(rng,dom[a])}}
+  const val=(a,r,c)=>{const R=rules[a];return R.t==='const'?R.v:R.t==='prog'?R.vals[c]:R.t==='latinP'?R.vals[(r+c)%3]:R.vals[(c-r+3)%3]};
+  const cell=(r,c)=>({shape:val('shape',r,c),count:val('count',r,c),fill:val('fill',r,c),size:val('size',r,c)});
+  const grid=[];for(let r=0;r<3;r++)for(let c=0;c<3;c++)grid.push(cell(r,c));
+  const ans=grid[8];
+  const cand=[];
+  const alt={shape:SHAPES,count:[1,2,3],fill:FILLS,size:[0,1,2]};
+  for(const a of attrs)for(const v of alt[a])if(v!==ans[a])cand.push({...ans,[a]:v});
+  const nOpts=L<2?6:8;
+  const seen=new Set([cellKey(ans)]);const dis=[];
+  for(const c of shuffle(rng,cand)){if(dis.length>=nOpts-1)break;if(!seen.has(cellKey(c))){seen.add(cellKey(c));dis.push(c)}}
+  const options=shuffle(rng,[ans,...dis]);
+  const sizeVar=rules.size.t!=='const';
+  const ex=[];
+  for(const a of attrs){const R=rules[a];if(R.t==='const')continue;
+    if(R.t==='prog'){const up=R.vals[0]<R.vals[2];ex.push(a==='count'?`Antallet ${up?'stiger':'falder'} fra venstre mod højre: ${R.vals.join(', ')}.`:`Figurerne bliver ${up?'større':'mindre'} fra venstre mod højre.`)}
+    else ex.push(a==='shape'?`Hver række har én af hver form: ${R.vals.map(s=>SH[s][0]).join(', ')}.`:a==='count'?`Hver række har ét felt med 1, ét med 2 og ét med 3 figurer.`:a==='fill'?`Hver række har én af hver udfyldning: tom, stribet og fyldt.`:`Hver række har én af hver størrelse.`)}
+  return {cat:'pattern',kind:'choice',render:'pattern',prompt:'Hvilket felt mangler?',grid,options:options.map(o=>({cell:o})),answer:options.indexOf(ans),cols:nOpts===6?3:4,
+    expl:ex.join(' ')+` Det manglende felt er ${descCell(ans,sizeVar)}.`};
+}
+
+// ---------- Rumlig intelligens ----------
+function norm(cs){const mx=Math.min(...cs.map(c=>c[0])),my=Math.min(...cs.map(c=>c[1]));return cs.map(([x,y])=>[x-mx,y-my]).sort((a,b)=>a[0]-b[0]||a[1]-b[1])}
+const skey=cs=>norm(cs).map(c=>c.join(',')).join(';');
+const rotCW=cs=>norm(cs.map(([x,y])=>[-y,x]));
+const mirror=cs=>norm(cs.map(([x,y])=>[-x,y]));
+function rots(cs){const o=[norm(cs)];for(let i=1;i<4;i++)o.push(rotCW(o[i-1]));return o}
+const dims=cs=>[Math.max(...cs.map(c=>c[0]))+1,Math.max(...cs.map(c=>c[1]))+1];
+function connected(cs){const k=new Set(cs.map(c=>c.join(',')));const st=[cs[0]];const seen=new Set([cs[0].join(',')]);while(st.length){const[x,y]=st.pop();for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const n=(x+dx)+','+(y+dy);if(k.has(n)&&!seen.has(n)){seen.add(n);st.push([x+dx,y+dy])}}}return seen.size===cs.length}
+function growShape(n,rng){const cs=[[0,0]];const has=(x,y)=>cs.some(c=>c[0]===x&&c[1]===y);let g=0;while(cs.length<n&&g++<500){const[x,y]=pick(rng,cs);const[dx,dy]=pick(rng,[[1,0],[-1,0],[0,1],[0,-1]]);if(!has(x+dx,y+dy))cs.push([x+dx,y+dy])}return norm(cs)}
+function goodShape(n,rng){for(let t=0;t<500;t++){const s=growShape(n,rng);const[w,h]=dims(s);if(w>4||h>4)continue;const rk=rots(s).map(skey);if(new Set(rk).size<4)continue;const mk=new Set(rots(mirror(s)).map(skey));if(rk.some(k=>mk.has(k)))continue;return s}return null}
+function nearMiss(base,forbid,rng){for(let t=0;t<200;t++){const cs=base.map(c=>c.slice());const i=ri(rng,0,cs.length-1);cs.splice(i,1);const[x,y]=pick(rng,cs);const[dx,dy]=pick(rng,[[1,0],[-1,0],[0,1],[0,-1]]);if(cs.some(c=>c[0]===x+dx&&c[1]===y+dy))continue;cs.push([x+dx,y+dy]);if(!connected(cs))continue;const n=norm(cs);const[w,h]=dims(n);if(w>4||h>4)continue;const k=skey(n);if(forbid.has(k))continue;forbid.add(k);return n}return null}
+
+function genSpatial(L,rng){
+  const n=[4,5,5,6,7][L];
+  const s=goodShape(n,rng);
+  const variant=L===0?'rotate':L===1?pick(rng,['rotate','mirror']):L===2?pick(rng,['rotate','mirror']):L===3?pick(rng,['rotate','odd']):pick(rng,['odd','rotate']);
+  const R=rots(s),M=rots(mirror(s));
+  const congruent=new Set([...R,...M].map(skey));
+  if(variant==='rotate'){
+    const k=ri(rng,1,3);const correct=R[k];
+    const nOpts=[4,4,5,6,6][L];const nNear=L>=2?(L===2?1:2):0;
+    const forbid=new Set(congruent);const near=[];
+    for(let i=0;i<nNear;i++){const nm=nearMiss(correct,forbid,rng);if(nm)near.push(nm)}
+    const mir=shuffle(rng,M).slice(0,nOpts-1-near.length);
+    const opts=shuffle(rng,[correct,...mir,...near]);
+    return {cat:'spatial',kind:'choice',render:'spatial',prompt:'Hvilken figur er den øverste figur, bare drejet?',ref:s,options:opts.map(o=>({shape:o})),answer:opts.indexOf(correct),cols:opts.length<=4?2:3,
+      expl:`Svaret er figuren drejet ${k*90}° med uret. De andre er spejlvendte${near.length?' eller har én brik flyttet':''}, og kan ikke drejes over i den.`};
+  }
+  if(variant==='mirror'){
+    const correct=mirror(s);const nOpts=L===1?4:5;
+    const dis=shuffle(rng,R).slice(0,nOpts-1);
+    const opts=shuffle(rng,[correct,...dis]);
+    return {cat:'spatial',kind:'choice',render:'spatial',prompt:'Hvilken figur er spejlbilledet, når figuren spejles i en lodret linje?',ref:s,mirrorLine:true,options:opts.map(o=>({shape:o})),answer:opts.indexOf(correct),cols:opts.length<=4?2:3,
+      expl:'Ved spejling i en lodret linje bytter venstre og højre plads. De andre figurer er kun drejet, ikke spejlet.'};
+  }
+  const odd=pick(rng,M);
+  const opts=shuffle(rng,[...R,odd]);
+  return {cat:'spatial',kind:'choice',render:'spatial',prompt:'Fire af figurerne er den samme figur, bare drejet. Hvilken er spejlvendt?',ref:null,options:opts.map(o=>({shape:o})),answer:opts.indexOf(odd),cols:3,
+    expl:'De fire andre kan drejes over i hinanden. Den rigtige kan kun nås ved at vende figuren om, altså spejle den.'};
+}
+
+// ---------- Hukommelse ----------
+function genMemory(L,rng){
+  const cfg=[{g:3,n:3,m:'set'},{g:3,n:4,m:'seq'},{g:4,n:5,m:'seq'},pick(rng,[{g:4,n:6,m:'seq'},{g:4,n:5,m:'rev'}]),pick(rng,[{g:4,n:7,m:'seq'},{g:4,n:6,m:'rev'}])][L];
+  const cells=shuffle(rng,range(cfg.g*cfg.g)).slice(0,cfg.n);
+  const prompt=cfg.m==='set'?'Husk hvilke felter der lyser.':'Husk rækkefølgen.';
+  const ask=cfg.m==='set'?'Tryk på de felter, der lyste.':cfg.m==='seq'?'Tryk felterne i samme rækkefølge.':'Tryk felterne i omvendt rækkefølge.';
+  return {cat:'memory',kind:'memory',grid:cfg.g,seq:cells,mode:cfg.m,prompt,ask,
+    expl:cfg.m==='set'?'Tallene viser de felter, der lyste.':cfg.m==='seq'?'Tallene viser rækkefølgen.':'Tallene viser den omvendte rækkefølge, du skulle trykke i.'};
+}
+
+const GEN={pattern:genPattern,numeric:genNumeric,spatial:genSpatial,memory:genMemory};
+function generate(cat,L,rng){const t=GEN[cat](L,rng);t.L=L;return t}
+
+
+// ===== THINK TWICE – spil og brugerflade =====
+const CATS=[
+  {id:'pattern',name:'Mønster',active:true},
+  {id:'numeric',name:'Numerisk',active:true},
+  {id:'spatial',name:'Rumlig',active:true},
+  {id:'memory',name:'Hukommelse',active:true},
+  {id:'verbal',name:'Verbal',active:false},
+  {id:'problem',name:'Problemløsning',active:false}];
+const ACTIVE=CATS.filter(c=>c.active).map(c=>c.id);
+const CNAME=Object.fromEntries(CATS.map(c=>[c.id,c.name]));
+const ICON={
+  pattern:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><circle cx="17.5" cy="17.5" r="3.5"/>',
+  numeric:'<path d="M5 9h14M5 15h14M10 4l-2 16M16 4l-2 16"/>',
+  spatial:'<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>',
+  memory:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/>',
+  verbal:'<path d="M5 18L10 6l5 12M7 14h6M16 18h4"/>',
+  problem:'<path d="M9 9a3 3 0 1 1 4 2.8c-.7.3-1 .8-1 1.5V14M12 18h.01"/><circle cx="12" cy="12" r="9"/>'};
+const icon=(id,s=18)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[id]}</svg>`;
+const BANDS=['Begynder','Let','Middel','Svær','Ekspert'];
+const band=r=>r>=1400?4:r>=1200?3:r>=1000?2:r>=800?1:0;
+const CENTER=[700,900,1100,1300,1500];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const nf=n=>Math.round(n).toLocaleString('da-DK');
+const sgn=n=>(n>0?'+':n<0?'−':'±')+Math.abs(Math.round(n));
+const DAY=864e5;
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const $=s=>document.querySelector(s);
+const app=()=>$('#app');
+
+// ---------- lagring ----------
+const KEY='thinktwice.v1';
+function fresh(){const ratings={};ACTIVE.forEach(c=>ratings[c]={r:1000,n:0});
+  return {v:1,created:Date.now(),xp:0,calibrated:false,ratings,history:[],snaps:[],daily:{},sessions:0,records:{best:{},firstExpert:null,dailyBest:0},milestones:[]}}
+function valid(p){return p&&p.v===1&&p.ratings&&Array.isArray(p.history)}
+function loadP(){try{const s=localStorage.getItem(KEY);if(s){const p=JSON.parse(s);if(valid(p)){ACTIVE.forEach(c=>p.ratings[c]=p.ratings[c]||{r:1000,n:0});return p}}}catch(e){}return fresh()}
+let P=loadP();
+let storageOk=true;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){storageOk=false}}
+
+// ---------- XP og niveau ----------
+function levelInfo(xp){let lvl=1,need=100,rem=xp;while(rem>=need){rem-=need;lvl++;need+=50}return{lvl,rem,need}}
+
+// ---------- rating ----------
+const expected=(R,D)=>1/(1+10**((D-R)/400));
+const kFactor=n=>Math.max(16,40-n*0.8);
+function targetD(cat){return clamp(P.ratings[cat].r-150+(Math.random()*240-120),450,1700)}
+
+// ---------- session ----------
+let S=null;
+function planMixed(){let cats=[];ACTIVE.forEach(c=>cats.push(c,c));for(let i=0;i<2;i++)cats.push(pick(Math.random,ACTIVE));
+  for(let t=0;t<50;t++){cats=shuffle(Math.random,cats);if(cats.every((c,i)=>i===0||c!==cats[i-1]))break}return cats.map(c=>({cat:c}))}
+function startSession(mode,cat){
+  let plan;
+  if(mode==='calib'){plan=[...shuffle(Math.random,ACTIVE).map(c=>({cat:c,D:850})),...shuffle(Math.random,ACTIVE).map(c=>({cat:c,D:1150}))]}
+  else if(mode==='cat')plan=range(10).map(()=>({cat}));
+  else if(mode==='daily'){const rng=mulberry32(hashStr('tt-daily-'+today()));let cats=[];ACTIVE.forEach(c=>cats.push(c,c));cats=shuffle(rng,cats);
+    plan=[1,1,2,2,3,3,4,4].map((L,i)=>({cat:cats[i],D:CENTER[L],task:generate(cats[i],L,rng)}))}
+  else plan=planMixed();
+  S={mode,plan,i:0,results:[],start:JSON.parse(JSON.stringify(P.ratings)),xp0:P.xp,lvl0:levelInfo(P.xp).lvl,best0:{...P.records.best},firstExpert0:P.records.firstExpert,solved0:P.history.filter(h=>h.ok).length};
+  nextTask();
+}
+function nextTask(){
+  if(S.i>=S.plan.length)return finishSession();
+  const p=S.plan[S.i];
+  let D=p.D!=null?p.D:targetD(p.cat);
+  const L=band(D);
+  const task=p.task||generate(p.cat,L,Math.random);
+  if(L===4)D=Math.min(D,1600);
+  S.task=task;S.D=D;S.answered=false;S.mem=null;S.input='';
+  renderTask();
+}
+function record(ok){
+  if(S.answered)return;S.answered=true;
+  const t=S.task,cat=t.cat,D=S.D;
+  let delta=0;
+  if(S.mode!=='daily'){const R=P.ratings[cat];const E=expected(R.r,D);const K=S.mode==='calib'?56:kFactor(R.n);delta=K*((ok?1:0)-E);R.r+=delta;R.n++}
+  const gain=ok?10+5*t.L:2;P.xp+=gain;
+  P.history.push({t:Date.now(),c:cat,d:Math.round(D),L:t.L,ok:ok?1:0,m:S.mode});
+  if(P.history.length>6000)P.history=P.history.slice(-6000);
+  if(ok&&t.L===4&&!P.records.firstExpert)P.records.firstExpert=Date.now();
+  S.results.push({cat,ok,L:t.L,gain});
+  save();
+  showFeedback(ok);
+}
+function finishSession(){
+  const s=S;s.task=null;P.sessions++;
+  P.xp+=20;
+  if(s.mode==='calib')P.calibrated=true;
+  const news=[],recs=[];
+  if(s.mode!=='daily'){
+    P.snaps.push({t:Date.now(),r:Object.fromEntries(ACTIVE.map(c=>[c,Math.round(P.ratings[c].r)]))});
+    for(const c of ACTIVE){const r=Math.round(P.ratings[c].r);const prev=P.records.best[c];
+      if(prev==null||r>prev){P.records.best[c]=r;if(prev!=null&&s.mode!=='calib')recs.push(`Ny rekord i ${CNAME[c].toLowerCase()}: ${nf(r)}`)}}
+  }
+  if(s.mode==='daily'){const sc=s.results.filter(r=>r.ok).length;P.daily[today()]={score:sc,n:s.plan.length,t:Date.now()};
+    if(sc>P.records.dailyBest){if(P.records.dailyBest>0)news.push(`Bedste dagsresultat: ${sc}/8`);P.records.dailyBest=sc}}
+  if(P.records.firstExpert&&!s.firstExpert0)news.push('Første ekspertopgave løst');
+  const solved=P.history.filter(h=>h.ok).length;
+  for(const m of [50,100,250,500,1000,2500,5000])if(s.solved0<m&&solved>=m)news.push(`${nf(m)} opgaver løst`);
+  news.forEach(text=>P.milestones.push({t:Date.now(),text}));
+  save();
+  renderSummary([...recs,...news]);
+}
+
+// ---------- tegning ----------
+function shapeSVG(s,x,y,r,f){
+  const fill=f==='solid'?'var(--fg)':f==='striped'?'url(#tt-stripe)':'none';
+  const a=`fill="${fill}" stroke="var(--fg)" stroke-width="2.2" stroke-linejoin="round"`;
+  if(s==='circle')return `<circle cx="${x}" cy="${y}" r="${r}" ${a}/>`;
+  if(s==='square'){const h=r*.86;return `<rect x="${x-h}" y="${y-h}" width="${2*h}" height="${2*h}" ${a}/>`}
+  if(s==='triangle'){const h=r*1.12;return `<polygon points="${x},${y-h} ${x+h*.98},${y+h*.72} ${x-h*.98},${y+h*.72}" ${a}/>`}
+  return `<polygon points="${x},${y-r*1.15} ${x+r*.85},${y} ${x},${y+r*1.15} ${x-r*.85},${y}" ${a}/>`;
+}
+function cellSVG(c){const xs=c.count===1?[50]:c.count===2?[31,69]:[18,50,82];const r=14.5*SIZES[c.size];
+  return `<svg viewBox="0 0 100 100" class="art">${xs.map(x=>shapeSVG(c.shape,x,50,r,c.fill)).join('')}</svg>`}
+function polySVG(cs,cls=''){const u=17;const[w,h]=dims(cs);const ox=50-w*u/2,oy=50-h*u/2;
+  return `<svg viewBox="0 0 100 100" class="art ${cls}">${cs.map(([x,y])=>`<rect x="${ox+x*u+1}" y="${oy+y*u+1}" width="${u-2}" height="${u-2}" rx="2.5"/>`).join('')}</svg>`}
+
+function hexagon(size=300,opts={}){
+  const ORDER=['pattern','numeric','verbal','spatial','memory','problem'].map(id=>CATS.find(c=>c.id===id));
+  const c=size/2,R=size*0.32;
+  const ang=i=>-Math.PI/2+i*Math.PI/3;
+  const pt=(i,f)=>[c+Math.cos(ang(i))*R*f,c+Math.sin(ang(i))*R*f];
+  const f=r=>clamp((r-400)/1300,0.05,1);
+  const ring=v=>ORDER.map((_,i)=>pt(i,f(v)).join(',')).join(' ');
+  const show=P.calibrated||opts.force;
+  let s=`<svg viewBox="-50 0 ${size+100} ${size}" class="hex" role="img" aria-label="Profil over kategorierne">`;
+  s+=`<polygon points="${ring(1700)}" class="hx-outer"/>`;
+  [800,1000,1200,1400].forEach(v=>s+=`<polygon points="${ring(v)}" class="hx-ring"/>`);
+  ORDER.forEach((k,i)=>{const[x,y]=pt(i,1);s+=`<line x1="${c}" y1="${c}" x2="${x}" y2="${y}" class="hx-axis ${k.active?'':'off'}"/>`});
+  if(show){
+    const pts=ORDER.map((k,i)=>k.active?pt(i,f(P.ratings[k.id].r)):null).filter(Boolean);
+    s+=`<polygon points="${pts.map(p=>p.join(',')).join(' ')}" class="hx-shape"/>`;
+    pts.forEach(([x,y])=>s+=`<circle cx="${x}" cy="${y}" r="4" class="hx-dot"/>`);
+  }
+  ORDER.forEach((k,i)=>{const[x,y]=pt(i,1.22);const anchor=Math.abs(x-c)<5?'middle':x>c?'start':'end';const dx=anchor==='start'?4:anchor==='end'?-4:0;
+    s+=`<g class="hx-lab ${k.active?'':'off'}" transform="translate(${x+dx},${y})"><text text-anchor="${anchor}" y="${y<c?-4:6}">${k.name}</text>`;
+    s+=`<text class="sub" text-anchor="${anchor}" y="${y<c?11:21}">${k.active?(show?BANDS[band(P.ratings[k.id].r)]:''):'kommer senere'}</text></g>`});
+  return s+'</svg>';
+}
+
+// ---------- skærme ----------
+function setScreen(html,cls=''){const a=app();a.className=cls;a.innerHTML=html;window.scrollTo(0,0)}
+function xpBar(){const li=levelInfo(P.xp);return `<div class="lvl"><span>Niveau ${li.lvl}</span><div class="bar"><i style="width:${li.rem/li.need*100}%"></i></div><span class="mute">${li.rem}/${li.need} XP</span></div>`}
+
+function renderHome(){
+  const d=P.daily[today()];
+  const daily=!P.calibrated?'':d?`<div class="card daily done"><div><div class="k">Dagens udfordring</div><div class="v">Klaret: ${d.score}/8</div></div><div class="mute small">Ny i morgen</div></div>`
+    :`<button class="card daily" onclick="startSession('daily')"><div><div class="k">Dagens udfordring</div><div class="v">8 opgaver, stigende sværhed</div></div><span class="arrow">→</span></button>`;
+  setScreen(`
+    <header class="top"><div class="logo">THINK<b>TWICE</b></div>${P.calibrated?xpBar():''}</header>
+    <div class="hexwrap">${hexagon()}${P.calibrated?'':'<div class="hexnote">Din profil tegnes efter første session</div>'}</div>
+    ${P.calibrated?`<button class="btn primary big" onclick="startSession('mixed')">Spil<span>10 opgaver · ca. 5 min</span></button>`
+      :`<button class="btn primary big" onclick="startSession('calib')">Start<span>Første session · 8 opgaver</span></button>`}
+    ${daily}
+    ${P.calibrated?`<div class="row2"><button class="btn ghost" onclick="renderCats()">Træn én kategori</button><button class="btn ghost" onclick="renderStats()">Statistik</button></div>`:''}
+    ${storageOk?'':'<p class="warn">Browseren tillader ikke at gemme. Din udvikling forsvinder, når siden lukkes.</p>'}
+  `,'home');
+}
+
+function renderCats(){
+  setScreen(`<header class="bar-h"><button class="icon-btn" onclick="renderHome()" aria-label="Tilbage">←</button><h2>Træn én kategori</h2></header>
+  <div class="list">${CATS.map(k=>k.active?`<button class="card catrow" onclick="startSession('cat','${k.id}')">${icon(k.id,22)}<div><div class="v">${k.name}</div><div class="mute small">${BANDS[band(P.ratings[k.id].r)]}</div></div><span class="arrow">→</span></button>`
+    :`<div class="card catrow off">${icon(k.id,22)}<div><div class="v">${k.name}</div><div class="mute small">Kommer senere</div></div></div>`).join('')}</div>`,'cats');
+}
+
+function progressSegs(){return `<div class="segs">${S.plan.map((_,i)=>{const r=S.results[i];return `<i class="${r?(r.ok?'ok':'no'):i===S.i?'cur':''}"></i>`}).join('')}</div>`}
+function taskHeader(){const t=S.task;const lab=S.mode==='daily'?'Dagens udfordring':S.mode==='calib'?'Første session':'';
+  return `<header class="thead"><button class="icon-btn" onclick="quitSession()" aria-label="Afslut">×</button>${progressSegs()}<span class="tcat">${icon(t.cat,16)}${CNAME[t.cat]}</span></header>${lab?`<div class="tlab">${lab} · ${BANDS[t.L]}</div>`:''}`}
+
+function renderTask(){
+  const t=S.task;let body='';
+  if(t.kind==='choice'){
+    let stem='';
+    if(t.render==='pattern')stem=`<div class="matrix">${t.grid.map((c,i)=>i===8?'<div class="mcell q">?</div>':`<div class="mcell">${cellSVG(c)}</div>`).join('')}</div>`;
+    else if(t.ref)stem=`<div class="refwrap"><div class="ref">${polySVG(t.ref,'accent')}${t.mirrorLine?'<div class="mline"></div>':''}</div></div>`;
+    const opt=o=>o.cell?cellSVG(o.cell):polySVG(o.shape);
+    body=`<p class="prompt">${t.prompt}</p>${stem}<div class="opts" style="--cols:${t.cols}">${t.options.map((o,i)=>`<button class="opt" data-i="${i}" onclick="choose(${i})">${opt(o)}</button>`).join('')}</div>`;
+  } else if(t.kind==='input'){
+    body=`<p class="prompt">${t.prompt}</p><div class="seq">${t.seq.map(n=>`<span>${fmtN(n)}</span>`).join('')}<span class="q" id="inp">?</span></div>
+    <div class="pad">${[1,2,3,4,5,6,7,8,9,'−',0,'⌫'].map(k=>`<button class="key" onclick="key('${k}')">${k}</button>`).join('')}</div>
+    <button class="btn primary" id="okbtn" onclick="submitInput()" disabled>Svar</button>`;
+    S.input='';
+  } else {
+    body=`<p class="prompt" id="mprompt">${t.prompt}</p><div class="mgrid g${t.grid}" id="mgrid">${range(t.grid*t.grid).map(i=>`<button class="mc" data-i="${i}" disabled onclick="memTap(${i})"></button>`).join('')}</div><p class="mute center small" id="mstat">Gør dig klar …</p>`;
+  }
+  setScreen(taskHeader()+`<main class="task">${body}</main><div id="sheet"></div>`,'play');
+  if(t.kind==='memory')runMemory();
+}
+
+// valg
+function choose(i){if(S.answered)return;const t=S.task;const ok=i===t.answer;
+  document.querySelectorAll('.opt').forEach(b=>{const j=+b.dataset.i;b.disabled=true;if(j===t.answer)b.classList.add('correct');else if(j===i)b.classList.add('wrong');else b.classList.add('dim')});
+  record(ok)}
+// tal
+function key(k){if(S.answered)return;if(k==='⌫')S.input=S.input.slice(0,-1);else if(k==='−'){S.input=S.input.startsWith('-')?S.input.slice(1):'-'+S.input}else if(S.input.replace('-','').length<7)S.input+=k;
+  $('#inp').textContent=S.input===''?'?':S.input.replace('-','−');
+  $('#okbtn').disabled=!/^-?\d+$/.test(S.input)}
+function submitInput(){if(S.answered||!/^-?\d+$/.test(S.input))return;const t=S.task;const ok=+S.input===t.answer;
+  const el=$('#inp');el.classList.add(ok?'okc':'noc');if(!ok)el.insertAdjacentHTML('afterend',`<span class="q okc">${fmtN(t.answer)}</span>`);
+  document.querySelectorAll('.key').forEach(b=>b.disabled=true);$('#okbtn').disabled=true;record(ok)}
+document.addEventListener('keydown',e=>{if(!S||!S.task||$('#modal'))return;
+  if(S.answered){if(e.key==='Enter'){e.preventDefault();goNext()}return}
+  if($('#mgrid'))return;
+  if(S.task.kind==='input'){if(/^\d$/.test(e.key))key(e.key);else if(e.key==='Backspace')key('⌫');else if(e.key==='-')key('−');else if(e.key==='Enter')submitInput()}
+  else if(S.task.kind==='choice'&&/^[1-8]$/.test(e.key)&&+e.key<=S.task.options.length)choose(+e.key-1)});
+// hukommelse
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function runMemory(){const t=S.task;const cells=[...document.querySelectorAll('.mc')];const token=S.task;const alive=()=>S&&S.task===token;
+  await sleep(700);if(!alive())return;$('#mstat').textContent='Se godt efter';
+  if(t.mode==='set'){t.seq.forEach(i=>cells[i].classList.add('lit'));await sleep(1300+300*t.seq.length);if(!alive())return;t.seq.forEach(i=>cells[i].classList.remove('lit'))}
+  else for(const i of t.seq){cells[i].classList.add('lit');await sleep(620);if(!alive())return;cells[i].classList.remove('lit');await sleep(220)}
+  if(!alive())return;
+  S.mem={need:t.mode==='rev'?t.seq.slice().reverse():t.seq.slice(),got:[]};
+  $('#mprompt').textContent=t.ask;$('#mstat').textContent=`0 af ${t.seq.length}`;cells.forEach(c=>c.disabled=false)}
+function memTap(i){if(S.answered||!S.mem)return;const t=S.task,m=S.mem;const cells=[...document.querySelectorAll('.mc')];
+  if(m.got.includes(i))return;
+  const ok=t.mode==='set'?m.need.includes(i):m.need[m.got.length]===i;
+  if(!ok){cells[i].classList.add('bad');showMemAnswer(cells);record(false);return}
+  m.got.push(i);cells[i].classList.add('hit');cells[i].textContent=t.mode==='set'?'':m.got.length;
+  $('#mstat').textContent=`${m.got.length} af ${t.seq.length}`;
+  if(m.got.length===m.need.length){cells.forEach(c=>c.disabled=true);record(true)}}
+function showMemAnswer(cells){const m=S.mem;cells.forEach(c=>c.disabled=true);m.need.forEach((i,k)=>{if(!cells[i].classList.contains('bad'))cells[i].classList.add('show');cells[i].textContent=S.task.mode==='set'?'•':k+1})}
+
+// feedback
+function showFeedback(ok){const t=S.task;const last=S.i===S.plan.length-1;
+  $('#sheet').innerHTML=`<div class="sheet ${ok?'ok':'no'}"><div class="sh-top"><div class="verdict">${ok?'Rigtigt':'Forkert'}</div><button class="link" onclick="this.closest('.sheet').classList.toggle('open')">Forklaring</button></div>
+  <p class="expl">${t.expl}</p><button class="btn primary" onclick="goNext()">${last?'Se resultat':'Næste'}</button></div>`;
+  document.querySelector('.task').classList.add('padded')}
+function goNext(){if(!S||!S.task||!S.answered)return;S.i++;nextTask()}
+function quitSession(){if(!S)return;
+  modal(`<h3>Afslut sessionen?</h3><p class="mute">${S.results.length?'De opgaver, du har løst, tæller med.':'Intet er registreret endnu.'}</p><div class="row2"><button class="btn ghost" onclick="closeModal()">Fortsæt</button><button class="btn primary" onclick="closeModal();quitNow()">Afslut</button></div>`)}
+function quitNow(){const s=S;if(!s.results.length||s.mode==='calib'){S=null;return renderHome()}s.plan=s.plan.slice(0,s.results.length);finishSession()}
+
+// opsummering
+function renderSummary(news){const s=S;const n=s.results.length,ok=s.results.filter(r=>r.ok).length;
+  const played=[...new Set(s.results.map(r=>r.cat))];const li=levelInfo(P.xp);
+  let rows='';
+  if(s.mode!=='daily')rows=`<div class="card"><div class="k">Udvikling</div>${played.map(c=>{const d=P.ratings[c].r-s.start[c].r;return `<div class="srow">${icon(c)}<span>${CNAME[c]}</span><span class="mute">${BANDS[band(P.ratings[c].r)]}</span><b class="${d>=0.5?'up':d<=-0.5?'down':''}">${sgn(d)}</b></div>`}).join('')}</div>`;
+  else{const prev=Object.entries(P.daily).filter(([k])=>k!==today()).map(([,v])=>v.score);const avg=prev.length?prev.reduce((a,b)=>a+b,0)/prev.length:null;
+    rows=`<div class="card"><div class="k">Dagens udfordring</div><p>${avg==null?'Det er dit første dagsresultat. Det bliver din målestok fremover.':`Dit gennemsnit er ${avg.toFixed(1).replace('.',',')}/8 over ${prev.length} ${prev.length===1?'dag':'dage'}.`}</p><p class="mute small">Dagens udfordring påvirker ikke din rating.</p></div>`}
+  const title=s.mode==='calib'?'Din startprofil':s.mode==='daily'?'Dagens udfordring':'Session færdig';
+  setScreen(`<header class="sumhead"><div class="k">${title}</div><div class="score">${ok}<span>/${n}</span></div><div class="mute">rigtige</div></header>
+    ${s.mode==='calib'?`<div class="hexwrap small">${hexagon(300,{force:true})}</div><p class="mute center">Fremover tilpasser opgaverne sig dit niveau i hver kategori.</p>`:''}
+    ${s.mode!=='calib'?rows:''}
+    ${news.length?`<div class="card news">${news.map(t=>`<div>◆ ${t}</div>`).join('')}</div>`:''}
+    <div class="card"><div class="xprow"><span>+${P.xp-s.xp0} XP</span>${li.lvl>s.lvl0?`<b class="up">Niveau ${li.lvl} nået</b>`:''}</div>${xpBar()}</div>
+    <div class="row2">${s.mode==='daily'?'<button class="btn ghost" onclick="renderStats()">Statistik</button>':`<button class="btn ghost" onclick="startSession('${s.mode==='cat'?'cat':'mixed'}','${s.mode==='cat'?s.plan[0].cat:''}')">Spil igen</button>`}<button class="btn primary" onclick="S=null;renderHome()">Til forsiden</button></div>`,'summary');
+}
+
+// ---------- statistik ----------
+let ST={range:30,cat:'pattern'};
+function inRange(t){return ST.range===0||t>=Date.now()-ST.range*DAY}
+function lineChart(cat){
+  const pts=P.snaps.filter(s=>inRange(s.t)&&s.r[cat]!=null).map(s=>({t:s.t,v:s.r[cat]}));
+  if(pts.length<2)return `<div class="empty">Spil mindst to sessioner i perioden for at se en kurve.</div>`;
+  const W=340,H=170,l=8,r=40,tp=10,b=20;
+  const vs=pts.map(p=>p.v);let lo=Math.min(...vs,900)-60,hi=Math.max(...vs,1100)+60;
+  const X=i=>l+(W-l-r)*(pts.length===1?0.5:i/(pts.length-1)),Y=v=>tp+(H-tp-b)*(1-(v-lo)/(hi-lo));
+  let s=`<svg viewBox="0 0 ${W} ${H}" class="chart" id="lc">`;
+  [800,1000,1200,1400].forEach((v,k)=>{if(v>lo&&v<hi)s+=`<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" class="grid"/><text x="${W-r+6}" y="${Y(v)+3.5}" class="axl">${BANDS[k+1]}</text>`});
+  s+=`<polyline points="${pts.map((p,i)=>X(i)+','+Y(p.v)).join(' ')}" class="ln"/>`;
+  pts.forEach((p,i)=>s+=`<circle cx="${X(i)}" cy="${Y(p.v)}" r="${pts.length>40?2:4}" class="mk"/>`);
+  const d0=new Date(pts[0].t),d1=new Date(pts[pts.length-1].t);const df=d=>d.getDate()+'/'+(d.getMonth()+1);
+  s+=`<text x="${l}" y="${H-4}" class="axl">${df(d0)}</text><text x="${W-r}" y="${H-4}" class="axl" text-anchor="end">${df(d1)}</text>`;
+  s+=`<line id="lc-x" class="xh" style="display:none" y1="${tp}" y2="${H-b}" x1="-10" x2="-10"/><rect x="0" y="0" width="${W}" height="${H}" fill="transparent" id="lc-hit"/></svg><div class="tip" id="lc-tip"></div>`;
+  setTimeout(()=>{const svg=$('#lc'),hit=$('#lc-hit'),tip=$('#lc-tip'),xh=$('#lc-x');if(!hit)return;
+    const move=e=>{const bb=svg.getBoundingClientRect();const x=(e.clientX-bb.left)/bb.width*W;let bi=0,bd=1e9;pts.forEach((p,i)=>{const d=Math.abs(X(i)-x);if(d<bd){bd=d;bi=i}});
+      const p=pts[bi];xh.style.display='';xh.setAttribute('x1',X(bi));xh.setAttribute('x2',X(bi));const dt=new Date(p.t);
+      tip.innerHTML=`<b>${nf(p.v)}</b> · ${BANDS[band(p.v)]}<br><span>${dt.toLocaleDateString('da-DK',{day:'numeric',month:'short'})} kl. ${dt.toLocaleTimeString('da-DK',{hour:'2-digit',minute:'2-digit'})}</span>`;
+      tip.style.display='block';const px=X(bi)/W*bb.width;tip.style.left=clamp(px-60,0,bb.width-130)+'px';tip.style.top=(Y(p.v)/H*bb.height-58)+'px'};
+    hit.addEventListener('pointermove',move);hit.addEventListener('pointerdown',move);hit.addEventListener('pointerleave',()=>{tip.style.display='none';xh.style.display='none'})},0);
+  return s;
+}
+function bandBars(){const h=P.history.filter(x=>inRange(x.t));
+  const rows=BANDS.map((n,L)=>{const a=h.filter(x=>x.L===L);const ok=a.filter(x=>x.ok).length;return{n,tot:a.length,ok}}).filter(r=>r.tot>0);
+  if(!rows.length)return '<div class="empty">Ingen opgaver i perioden.</div>';
+  return rows.map(r=>`<div class="brow"><span>${r.n}</span><div class="track"><i style="width:${r.ok/r.tot*100}%"></i></div><span class="num">${r.ok}/${r.tot} · ${Math.round(r.ok/r.tot*100)} %</span></div>`).join('');
+}
+function dailyChart(){const ent=Object.entries(P.daily).filter(([,v])=>inRange(v.t)).sort((a,b)=>a[0]<b[0]?-1:1).slice(-30);
+  if(!ent.length)return '<div class="empty">Ingen dagsudfordringer i perioden.</div>';
+  const W=340,H=110,b=18,bw=Math.min(ent.length<=7?30:22,(W-30)/ent.length-3);
+  let s=`<svg viewBox="0 0 ${W} ${H}" class="chart">`;[4,8].forEach(v=>s+=`<line x1="0" x2="${W-24}" y1="${(H-b)-(H-b-8)*v/8}" y2="${(H-b)-(H-b-8)*v/8}" class="grid"/><text x="${W-18}" y="${(H-b)-(H-b-8)*v/8+3.5}" class="axl">${v}</text>`);
+  ent.forEach(([d,v],i)=>{const x=4+i*(bw+3),h=Math.max(2,(H-b-8)*v.score/8);s+=`<rect x="${x}" y="${H-b-h}" width="${bw}" height="${h}" rx="3" class="bar"><title>${d.split('-').reverse().slice(0,2).join('/')}: ${v.score}/8</title></rect>`});
+  const f=d=>d.split('-').reverse().slice(0,2).map(Number).join('/');
+  if(ent.length<=7)ent.forEach(([d],i)=>s+=`<text x="${4+i*(bw+3)+bw/2}" y="${H-3}" class="axl" text-anchor="middle">${f(d)}</text>`);
+  else s+=`<text x="4" y="${H-3}" class="axl">${f(ent[0][0])}</text><text x="${4+(ent.length-1)*(bw+3)+bw}" y="${H-3}" class="axl" text-anchor="end">${f(ent[ent.length-1][0])}</text>`;
+  s+='</svg>';
+  return s}
+function activity(){const days=35;const counts={};P.history.forEach(h=>{const d=new Date(h.t);const k=d.toDateString();counts[k]=(counts[k]||0)+1});
+  const now=new Date();const day=i=>new Date(now.getFullYear(),now.getMonth(),now.getDate()-(days-1)+i);const start=day(0);
+  const off=(start.getDay()+6)%7;let cells='';for(let i=0;i<off;i++)cells+='<i class="pad"></i>';
+  let active=0;for(let i=0;i<days;i++){const d=day(i);const c=counts[d.toDateString()]||0;if(c)active++;const lv=c===0?0:c<10?1:c<20?2:c<40?3:4;
+    cells+=`<i class="a${lv}" title="${d.toLocaleDateString('da-DK',{day:'numeric',month:'short'})}: ${c} opgaver"></i>`}
+  return `<div class="heat">${['M','T','O','T','F','L','S'].map(x=>`<b>${x}</b>`).join('')}${cells}</div><p class="mute small">${active} af de seneste ${days} dage med træning</p>`}
+function renderStats(){
+  const h=P.history.filter(x=>inRange(x.t));const tot=h.length,ok=h.filter(x=>x.ok).length;
+  const first=P.snaps.find(s=>inRange(s.t));
+  const rr=P.records;
+  setScreen(`<header class="bar-h"><button class="icon-btn" onclick="renderHome()" aria-label="Tilbage">←</button><h2>Statistik</h2></header>
+  <div class="tabs">${[[7,'7 dage'],[30,'30 dage'],[0,'Alt']].map(([v,n])=>`<button class="${ST.range===v?'on':''}" onclick="ST.range=${v};renderStats()">${n}</button>`).join('')}</div>
+  <div class="card"><div class="k">Rating pr. kategori</div>${ACTIVE.map(c=>{const r=P.ratings[c].r;const base=first?first.r[c]:null;const d=base!=null?r-base:null;
+    return `<div class="srow">${icon(c)}<span>${CNAME[c]}</span><span class="mute">${BANDS[band(r)]}</span><b>${nf(r)}</b><em class="${d>=0.5?'up':d<=-0.5?'down':''}">${d==null?'':sgn(d)}</em></div>`}).join('')}
+    <p class="mute small">Ændring i perioden. Rating viser, hvor svære opgaver du kan løse.</p></div>
+  <div class="card"><div class="k">Udvikling</div><div class="chips">${ACTIVE.map(c=>`<button class="${ST.cat===c?'on':''}" onclick="ST.cat='${c}';renderStats()">${CNAME[c]}</button>`).join('')}</div><div class="chartwrap">${lineChart(ST.cat)}</div></div>
+  <div class="card"><div class="k">Præcision pr. sværhedsgrad</div>${bandBars()}<p class="mute small">${tot?`I alt ${ok} af ${tot} rigtige (${Math.round(ok/tot*100)} %). Systemet sigter efter cirka 70 %, så præcisionen bør være stabil, mens ratingen stiger.`:''}</p></div>
+  <div class="card"><div class="k">Dagens udfordring</div>${dailyChart()}</div>
+  <div class="card"><div class="k">Aktivitet</div>${activity()}</div>
+  <div class="card"><div class="k">Personlige rekorder</div>
+    ${ACTIVE.map(c=>`<div class="krow"><span>Højeste rating, ${CNAME[c].toLowerCase()}</span><b>${rr.best[c]!=null?nf(rr.best[c]):'–'}</b></div>`).join('')}
+    <div class="krow"><span>Bedste dagsudfordring</span><b>${rr.dailyBest?rr.dailyBest+'/8':'–'}</b></div>
+    <div class="krow"><span>Første ekspertopgave</span><b>${rr.firstExpert?new Date(rr.firstExpert).toLocaleDateString('da-DK'):'–'}</b></div>
+    <div class="krow"><span>Sessioner i alt</span><b>${nf(P.sessions)}</b></div>
+    <div class="krow"><span>Løste opgaver i alt</span><b>${nf(P.history.filter(x=>x.ok).length)}</b></div>
+    ${P.milestones.length?`<div class="k" style="margin-top:14px">Milepæle</div>${P.milestones.slice(-6).reverse().map(m=>`<div class="krow"><span>${m.text}</span><span class="mute">${new Date(m.t).toLocaleDateString('da-DK',{day:'numeric',month:'short'})}</span></div>`).join('')}`:''}</div>
+  <div class="card"><div class="k">Dine data</div><p class="mute small">Data gemmes kun i denne browser. Tag en backup, hvis du skifter enhed eller rydder browseren.</p>
+    <div class="row3"><button class="btn ghost sm" onclick="exportData()">Eksportér</button><button class="btn ghost sm" onclick="importData()">Importér</button><button class="btn ghost sm" onclick="resetData()">Nulstil</button></div></div>`,'stats');
+}
+
+// ---------- data ----------
+function modal(html){closeModal();document.body.insertAdjacentHTML('beforeend',`<div class="modal" id="modal" onclick="if(event.target===this)closeModal()"><div class="mbox">${html}</div></div>`)}
+function closeModal(){const m=$('#modal');if(m)m.remove()}
+function exportData(){const txt=JSON.stringify(P);modal(`<h3>Backup</h3><p class="mute small">Kopiér teksten og gem den et sikkert sted, fx i en note.</p><textarea id="ta" readonly>${txt.replace(/</g,'&lt;')}</textarea><div class="row2"><button class="btn ghost" onclick="closeModal()">Luk</button><button class="btn primary" id="cpb" onclick="copyData()">Kopiér</button></div>`)}
+async function copyData(){const ta=$('#ta');try{await navigator.clipboard.writeText(ta.value);$('#cpb').textContent='Kopieret'}catch(e){ta.select();$('#cpb').textContent='Markeret – kopiér selv'}}
+function importData(){modal(`<h3>Gendan backup</h3><p class="mute small">Indsæt teksten fra en tidligere backup. Det erstatter dine nuværende data.</p><textarea id="ta" placeholder="Indsæt her"></textarea><p class="warn small" id="ierr"></p><div class="row2"><button class="btn ghost" onclick="closeModal()">Annullér</button><button class="btn primary" onclick="doImport()">Gendan</button></div>`)}
+function doImport(){try{const p=JSON.parse($('#ta').value);if(!valid(p))throw 0;ACTIVE.forEach(c=>p.ratings[c]=p.ratings[c]||{r:1000,n:0});P=p;save();closeModal();renderStats()}catch(e){$('#ierr').textContent='Teksten kunne ikke læses som en backup.'}}
+function resetData(){modal(`<h3>Nulstil alt?</h3><p class="mute">Rating, statistik og XP slettes. Det kan ikke fortrydes, medmindre du har en backup.</p><div class="row2"><button class="btn ghost" onclick="closeModal()">Annullér</button><button class="btn danger" onclick="P=fresh();save();closeModal();renderHome()">Nulstil</button></div>`)}
+
+renderHome();
+
+</script>
+<script>
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+</script>
+</body>
+</html>
